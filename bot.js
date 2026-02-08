@@ -41,8 +41,9 @@ async function start() {
                 const tx = await provider.getTransaction(txHash);
                 
                 // 1000 POL dan katta tranzaksiya bo'lsa
-                if (tx && tx.value >= MIN_VALUE) {
-                    console.log(`KIT ANIQLANDI! Blok: ${blockNumber}, Hash: ${tx.hash}, Qiymat: ${ethers.formatEther(tx.value)} POL`);
+           if (tx.value > 0) {
+    console.log(`KIT ANIQLANDI! Blok: ${blockNumber}, Hash: ${tx.hash}, Qiymat: ${ethers.formatEther(tx.value)} POL`);
+}
                     
                     const feeData = await provider.getFeeData();
                     
