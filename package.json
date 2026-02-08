@@ -1,0 +1,12 @@
+{
+  "name": "polygon-bot",
+  "version": "1.0.0",
+  "description": "Polygon Kit Ovchisi",
+  "main": "bot.js",
+  "dependencies": {
+    "ethers": "^6.13.2"
+  },
+  "scripts": {
+    "start": "node bot.js"
+  }
+}
