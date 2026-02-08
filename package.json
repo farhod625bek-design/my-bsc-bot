@@ -1,7 +1,6 @@
 {
   "name": "polygon-bot",
   "version": "1.0.0",
-  "description": "Polygon MEV Bot",
   "main": "bot.js",
   "dependencies": {
     "ethers": "^6.13.0",
@@ -9,5 +8,8 @@
   },
   "scripts": {
     "start": "node bot.js"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }
