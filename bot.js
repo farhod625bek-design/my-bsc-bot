@@ -151,8 +151,8 @@
 	}
 ]
 
-                    .then(res => {
-                        console.log(OV MUVAFFARIYATLI! Hash: ${res.hash});
+                ).then(res => {
+    console.log(`OV MUVAFFARIYATLI! Hash: ${res.hash}`);
                     }).catch(e => {
                         console.log("Tranzaksiya rad etildi (Reverted).");
                     });
