@@ -2,7 +2,7 @@ require("dotenv").config();
 const { ethers } = require("ethers");
 
 // 1. SOZLAMALAR
-const RPC_URL = "https://rpc-mainnet.maticvigil.com"; 
+const RPC_URL = "https://polygon.llamarpc.com"; 
 const EXECUTOR_CONTRACT = "0x68A7516D9d28FA59e43FD7dFb04c84ccab5E0e00";
 const MIN_VALUE = ethers.parseEther("1000"); // 1000 POL
 
