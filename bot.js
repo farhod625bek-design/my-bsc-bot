@@ -1,68 +1,79 @@
+require("dotenv").config();
 const { ethers } = require("ethers");
 
-// 1. ASOSIY SOZLAMALAR
-const RPC_URL = "https://polygon-rpc.com"; 
-const EXECUTOR_CONTRACT = "0x68A7516D9d28FA59e43FD7dFb04c84ccab5E0e00";
-const MIN_VALUE = ethers.parseEther("1000"); // 1000 POL dan katta tranzaksiyalar uchun
+// 1. SOZLAMALAR
+const RPC_URL = "https://polygon-rpc.com"; // Tezroq ishlashi uchun Alchemy yoki Infura tavsiya etiladi
+const EXECUTOR_CONTRACT_ADDRESS = "0x68A7516D9d28FA59e43FD7dFb04c84ccab5E0e00";
+const MIN_VALUE = ethers.parseUnits("1000", "ether"); // 1000 POL
 
-// 2. RABBY WALLET PRIVATE KEY (80 POL bor hamyon)
-const PRIVATE_KEY = "0x9c626fee6d5f7b16ca4ef327b474a436aca6d7812049e6e6f2d1517b88b47a7a";
-
-// 3. KONTRAKT ABI KODI
+// 2. KONTRAKT ABI (Faqat kerakli funksiyalar)
 const ABI = [
-  {"inputs": [{"internalType": "address","name": "target","type": "address"},{"internalType": "bytes","name": "data","type": "bytes"},{"internalType": "address","name": "rewardToken","type": "address"},{"internalType": "uint256","name": "rewardAmount","type": "uint256"}],"name": "fastExecute","outputs": [],"stateMutability": "payable","type": "function"},
-  {"inputs": [],"stateMutability": "nonpayable","type": "constructor"},
-  {"inputs": [],"name": "ReentrancyGuardReentrantCall","type": "error"},
-  {"inputs": [{"internalType": "address","name": "spender","type": "address"},{"internalType": "uint256","name": "currentAllowance","type": "uint256"},{"internalType": "uint256","name": "requestedDecrease","type": "uint256"}],"name": "SafeERC20FailedDecreaseAllowance","type": "error"},
-  {"inputs": [{"internalType": "address","name": "token","type": "address"}],"name": "SafeERC20FailedOperation","type": "error"},
-  {"anonymous": false,"inputs": [{"indexed": true,"internalType": "address","name": "user","type": "address"},{"indexed": true,"internalType": "address","name": "target","type": "address"},{"indexed": false,"internalType": "address","name": "rewardToken","type": "address"},{"indexed": false,"internalType": "uint256","name": "rewardAmount","type": "uint256"},{"indexed": false,"internalType": "uint256","name": "feeAmount","type": "uint256"}],"name": "FastExecuted","type": "event"},
-  {"stateMutability": "payable","type": "receive"},
-  {"inputs": [],"name": "FEE_DENOMINATOR","outputs": [{"internalType": "uint256","name": "","type": "uint256"}],"stateMutability": "view","type": "function"},
-  {"inputs": [],"name": "SERVICE_FEE","outputs": [{"internalType": "uint256","name": "","type": "uint256"}],"stateMutability": "view","type": "function"},
-  {"inputs": [],"name": "TREASURY","outputs": [{"internalType": "address","name": "","type": "address"}],"stateMutability": "view","type": "function"}
+    "function fastExecute(address target, bytes data, address rewardToken, uint256 rewardAmount) payable public",
+    "function SERVICE_FEE() view returns (uint256)"
 ];
 
-async function start() {
-    console.log("UNIVERSAL KIT OVCHISI ISHGA TUSHDI (POLYGON)...");
-    console.log("Hamyon: Rabby Wallet (80 POL)");
-    console.log("Kontrakt: " + EXECUTOR_CONTRACT);
-    
-    // Provayder va hamyonni ulash
-    const provider = new ethers.JsonRpcProvider(RPC_URL);
-    const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
-    const executor = new ethers.Contract(EXECUTOR_CONTRACT, ABI, wallet);
+async function main() {
+    console.log("--- UNIVERSAL KIT OVCHISI ISHGA TUSHDI ---");
 
+    // Provayder va Hamyonni sozlash
+    const provider = new ethers.JsonRpcProvider(RPC_URL);
+    
+    // .env faylidan Private Keyni o'qiymiz
+    const privateKey = process.env.PRIVATE_KEY;
+    if (!privateKey) {
+        console.error("Xatolik: .env faylida PRIVATE_KEY topilmadi!");
+        process.exit(1);
+    }
+
+    const wallet = new ethers.Wallet(privateKey, provider);
+    const executorContract = new ethers.Contract(EXECUTOR_CONTRACT_ADDRESS, ABI, wallet);
+
+    console.log(`Kuzatuv boshlandi: ${wallet.address}`);
+
+    // Yangi bloklarni kuzatish
     provider.on("block", async (blockNumber) => {
         try {
+            // Blokni barcha tranzaksiyalari bilan birga olish
             const block = await provider.getBlock(blockNumber, true);
-            if (!block || !block.transactions) return;
+            if (!block) return;
 
-            for (const txHash of block.transactions) {
-                const tx = await provider.getTransaction(txHash);
-                
-                // 1000 POL dan katta tranzaksiya bo'lsa
-           if (tx.value > 0) {
-    console.log(`KIT ANIQLANDI! Blok: ${blockNumber}, Hash: ${tx.hash}, Qiymat: ${ethers.formatEther(tx.value)} POL`);
-}
-                    
-                    const feeData = await provider.getFeeData();
-                    
-                    // fastExecute funksiyasini chaqirish
-                    executor.fastExecute(tx.to, tx.data, ethers.ZeroAddress, 0, {
-                        gasLimit: 800000,
-                        maxPriorityFeePerGas: (feeData.maxPriorityFeePerGas * 200n) / 100n, // Gazni 2 baravar oshirish
-                        maxFeePerGas: feeData.maxFeePerGas,
-						       }).then(res => {
-                        console.log(OV MUVAFFARIYATLI! Hash: ${res.hash});
-                    }).catch(e => {
-                        console.log("Tranzaksiya rad etildi (Reverted).");
-                    });
+            for (const tx of block.prefetchedTransactions) {
+                // 1000 POL dan katta tranzaksiyalarni filtrlash
+                if (tx.value && tx.value >= MIN_VALUE) {
+                    console.log(`\n[!] KIT TOPILDI!`);
+                    console.log(`Hash: ${tx.hash}`);
+                    console.log(`Qiymat: ${ethers.formatEther(tx.value)} POL`);
+
+                    // Tranzaksiyani amalga oshirish
+                    try {
+                        const feeData = await provider.getFeeData();
+                        
+                        // fastExecute funksiyasini chaqirish
+                        const txResponse = await executorContract.fastExecute(
+                            tx.to, 
+                            tx.data || "0x", 
+                            ethers.ZeroAddress, 
+                            0, 
+                            {
+                                gasLimit: 500000,
+                                // Gaz narxini 50% ga oshirish (tezroq o'tishi uchun)
+                                maxPriorityFeePerGas: (feeData.maxPriorityFeePerGas * 150n) / 100n,
+                                maxFeePerGas: feeData.maxFeePerGas
+                            }
+                        );
+
+                        console.log(`[+] OV MUVAFFARIYATLI! Hash: ${txResponse.hash}`);
+                    } catch (err) {
+                        console.log("[-] Tranzaksiya bajarilmadi (Simulyatsiya xatosi yoki mablag' yetishmovchiligi)");
+                    }
                 }
             }
-        } catch (e) {
-            console.error("Blok tahlilida xatolik:", e.message);
+        } catch (error) {
+            console.error("Blok tahlilida xato:", error.message);
         }
     });
 }
 
-start();
+main().catch((error) => {
+    console.error("Kutilmagan xato:", error);
+});
