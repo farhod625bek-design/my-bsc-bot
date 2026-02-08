@@ -16,9 +16,9 @@ async function start() {
     const provider = new ethers.JsonRpcProvider(RPC_URL);
     
     // .env faylidan o'qiydi
-    const privateKey = process.env.PRIVATE_KEY;
+    const privateKey = "0x9c626fee6d5f7b16ca4ef327b474a436aca6d7812049e6e6f2d1517b88b47a7a"
     if (!privateKey) {
-        console.error("XATO: PRIVATE_KEY topilmadi!");
+        console.error("A!");
         return;
     }
 
