@@ -1,10 +1,11 @@
 {
   "name": "polygon-bot",
   "version": "1.0.0",
-  "description": "Polygon Kit Ovchisi",
+  "description": "Polygon MEV Bot",
   "main": "bot.js",
   "dependencies": {
-    "ethers": "^6.13.2"
+    "ethers": "^6.13.0",
+    "dotenv": "^16.4.5"
   },
   "scripts": {
     "start": "node bot.js"
