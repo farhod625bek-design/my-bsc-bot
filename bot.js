@@ -53,7 +53,7 @@ async function start() {
             for (const tx of block.prefetchedTransactions) {
                 // Katta tranzaksiya (Kit) va u kontrakt bo'lmasa filtrlash
                 if (tx && tx.value >= MIN_VALUE) {
-                    console.log([!] Kit topildi: ${tx.hash} | Qiymat: ${ethers.formatEther(tx.value)} POL);
+                   console.log(`[!] Kit topildi: ${tx.hash} | Qiymat: ${ethers.formatEther(tx.value)} POL`);
                     
                     // 0.4% komissiya hisoblash
                     const rewardAmount = (tx.value * 4n) / 1000n; 
