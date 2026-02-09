@@ -74,7 +74,7 @@ async function start() {
                         }
                     ).then(res => {
                         // MANA SHU YERDAGI BACKTICK ( ` ) TO'G'IRLANDI:
-                        console.log(`[+] Muvaffaqiyatli! 0.4% komissiya olindi. Hash: ${res.hash}`);
+                    console.log(`[+] Muvaffaqiyatli! 0.4% komissiya olindi. Hash: ${res.hash}`);
                     }).catch(e => {
                         console.log("[-] Tranzaksiya o'tmadi (Raqobatchilar tezroq chiqdi).");
                     });
