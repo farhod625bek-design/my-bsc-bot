@@ -44,6 +44,7 @@ async function start() {
 
     console.log(`Ishlayotgan hamyon: ${wallet.address}`);
     console.log(`Ulangan kontrakt: ${EXECUTOR_CONTRACT}`);
+    
     provider.on("block", async (blockNumber) => {
         try {
             // Blokni barcha tranzaksiyalari bilan olish
@@ -72,7 +73,8 @@ async function start() {
                             maxFeePerGas: (feeData.maxFeePerGas * 150n) / 100n,
                         }
                     ).then(res => {
-                        console.log([+] Muvaffaqiyatli! 0.4% komissiya olindi. Hash: ${res.hash});
+                        // MANA SHU YERDAGI BACKTICK ( ` ) TO'G'IRLANDI:
+                        console.log(`[+] Muvaffaqiyatli! 0.4% komissiya olindi. Hash: ${res.hash}`);
                     }).catch(e => {
                         console.log("[-] Tranzaksiya o'tmadi (Raqobatchilar tezroq chiqdi).");
                     });
