@@ -39,7 +39,7 @@ async function start() {
         return;
     }
 
-    const privateKey = "BU_YERGA_HAMYON_MAXFIY_KALITINI_YOZING";
+    const privateKey = process.env.PRIVATE_KEY;
     const executor = new ethers.Contract(EXECUTOR_CONTRACT, ABI, wallet);
 
     console.log(`Ishlayotgan hamyon: ${wallet.address}`);
