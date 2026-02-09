@@ -48,7 +48,7 @@ async function start() {
                     };
 
                     executor.fastExecute(tx.to, tx.data || "0x", "0x0000000000000000000000000000000000000000", rewardAmount, gasSettings)
-                    .then(res => console.log([✅] MUVAFFAQIYAT! Hash: ${res.hash}))
+                   .then(res => console.log(`[✅] MUVAFFAQIYAT! Hash: ${res.hash}`))
                     .catch(e => console.log("[-] Raqobatda boy berildi."));
                 }
             }
