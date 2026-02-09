@@ -42,7 +42,7 @@ async function start() {
     const wallet = new ethers.Wallet(privateKey, provider);
     const executor = new ethers.Contract(EXECUTOR_CONTRACT, ABI, wallet);
 
-    console.log(Ishlayotgan hamyon: ${wallet.address});
+    console.log(`Ishlayotgan hamyon: ${wallet.address}`);
     console.log(Ulangan kontrakt: ${EXECUTOR_CONTRACT});
 
     provider.on("block", async (blockNumber) => {
