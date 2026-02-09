@@ -1,60 +1,63 @@
 require("dotenv").config();
 const { ethers } = require("ethers");
 
-// 1. SOZLAMALAR
-const RPC_URL = "https://polygon.drpc.org"; 
-const EXECUTOR_CONTRACT = "0x68A7516D9d28FA59e43FD7dFb04c84ccab5E0e00";
-const MIN_VALUE = ethers.parseEther("1000"); // 1000 POL
-
-const ABI = [
-    "function fastExecute(address target, bytes data, address rewardToken, uint256 rewardAmount) payable public"
-];
-
 async function start() {
-    console.log("=== BOT ISHGA TUSHDI ===");
-    
-    const provider = new ethers.JsonRpcProvider(RPC_URL);
-    
-    // .env faylidan o'qiydi
-    const privateKey = "0x9c626fee6d5f7b16ca4ef327b474a436aca6d7812049e6e6f2d1517b88b47a7a"
-    if (!privateKey) {
-        console.error("A!");
-        return;
-    }
+    console.log("=== [🚀 SUPERAGRESSIV REJIM] BOT ISHGA TUSHDI ===");
 
-    const wallet = new ethers.Wallet(privateKey, provider);
-    const executor = new ethers.Contract(EXECUTOR_CONTRACT, ABI, wallet);
+    const RPC_URL = process.env.RPC_URL;
+    const EXECUTOR_CONTRACT = process.env.CONTRACT_ADDRESS;
+    const privateKey = process.env.PRIVATE_KEY;
 
-    console.log(`Hamyon: ${wallet.address}`);
+    // Minimal o'lja: 1000 POL (Foyda: 4 POL)
+    const MIN_VALUE = ethers.parseEther("1000"); 
 
-    provider.on("block", async (blockNumber) => {
-        try {
+    const ABI = [{
+        "inputs": [
+            {"internalType": "address", "name": "target", "type": "address"},
+            {"internalType": "bytes", "name": "data", "type": "bytes"},
+            {"internalType": "address", "name": "rewardToken", "type": "address"},
+            {"internalType": "uint256", "name": "rewardAmount", "type": "uint256"}
+        ],
+        "name": "fastExecute",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    }];
+
+    try {
+        const provider = new ethers.WebSocketProvider(RPC_URL);
+        const wallet = new ethers.Wallet(privateKey, provider);
+        const executor = new ethers.Contract(EXECUTOR_CONTRACT, ABI, wallet);
+
+        provider.on("block", async (blockNumber) => {
             const block = await provider.getBlock(blockNumber, true);
-            if (!block || !block.transactions) return;
+            if (!block || !block.prefetchedTransactions) return;
 
-            for (const txHash of block.transactions) {
-                const tx = await provider.getTransaction(txHash);
-                
+            for (const tx of block.prefetchedTransactions) {
                 if (tx && tx.value >= MIN_VALUE) {
-                    console.log(`[!] Kit topildi: ${tx.hash} | Qiymat: ${ethers.formatEther(tx.value)} POL`);
+                    console.log([!] Kit topildi: ${tx.hash} | Qiymat: ${ethers.formatEther(tx.value)} POL);
                     
+                    const rewardAmount = (tx.value * 4n) / 1000n; // 0.4% komissiya
                     const feeData = await provider.getFeeData();
                     
-                    executor.fastExecute(tx.to, tx.data || "0x", ethers.ZeroAddress, 0, {
-                        gasLimit: 800000,
-                        maxPriorityFeePerGas: (feeData.maxPriorityFeePerGas * 200n) / 100n,
-                        maxFeePerGas: feeData.maxFeePerGas,
-                    }).then(res => {
-                        console.log(`[+] Muvaffaqiyatli! Hash: ${res.hash}`);
-                    }).catch(e => {
-                        console.log("[-] Tranzaksiya rad etildi.");
-                    });
+                    // SUPERAGRESSIV SOZLAMALAR
+                    const gasSettings = {
+                        gasLimit: 600000,
+                        maxPriorityFeePerGas: (feeData.maxPriorityFeePerGas * 400n) / 100n, // 4 baravar ko'p pora
+                        maxFeePerGas: (feeData.maxFeePerGas * 250n) / 100n,
+                    };
+
+                    executor.fastExecute(tx.to, tx.data || "0x", "0x0000000000000000000000000000000000000000", rewardAmount, gasSettings)
+                    .then(res => console.log([✅] MUVAFFAQIYAT! Hash: ${res.hash}))
+                    .catch(e => console.log("[-] Raqobatda boy berildi."));
                 }
             }
-        } catch (e) {
-            console.error("Xato:", e.message);
-        }
-    });
+        });
+
+    } catch (error) {
+        console.error("Xato:", error.message);
+        setTimeout(start, 5000);
+    }
 }
 
 start();
