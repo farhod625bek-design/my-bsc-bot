@@ -1,17 +1,16 @@
-require("dotenv").config();
 const { ethers } = require("ethers");
 
 async function start() {
-    console.log("=== [🚀 SUPERAGRESSIV REJIM] BOT ISHGA TUSHDI ===");
+    console.log("=== [🚀 AGRESSIV REJIM] BOT ISHGA TUSHDI ===");
 
+    // Muhim ma'lumotlar (Environment variables)
     const RPC_URL = process.env.RPC_URL;
     const EXECUTOR_CONTRACT = process.env.CONTRACT_ADDRESS;
     const privateKey = process.env.PRIVATE_KEY;
 
-    // Minimal o'lja: 1000 POL (taxminiy foyda: 4-5 POL)
-    const MIN_VALUE = ethers.parseUnits("1000", "ether"); 
+    // Minimal o'lja: 1000 POL
+    const MIN_VALUE = ethers.parseEther("1000"); 
 
-    // KONKRAKT BILAN ALOQA UCHUN ABI
     const ABI = [{
         "inputs": [
             {"internalType": "address", "name": "target", "type": "address"},
@@ -34,39 +33,32 @@ async function start() {
 
         provider.on("block", async (blockNumber) => {
             try {
-                // Yangi blokni va uning ichidagi barcha tranzaksiyalarni olish
                 const block = await provider.getBlock(blockNumber, true);
-                if (!block || !block.transactions) return;
+                if (!block) return;
 
                 for (const tx of block.prefetchedTransactions) {
-                    // Agar tranzaksiya qiymati 1000 POLdan katta bo'lsa
                     if (tx && tx.value >= MIN_VALUE) {
-                        console.log([!] Kit topildi: ${tx.hash} | Qiymat: ${ethers.formatEther(tx.value)} POL);
+                        console.log([!] Kit topildi: ${tx.hash});
                         
-                        const rewardAmount = (tx.value * 4n) / 1000n; // 0.4% foyda kutish
+                        const rewardAmount = (tx.value * 4n) / 1000n; 
                         const feeData = await provider.getFeeData();
                         
-                        // AGRESSIV GAZ SOZLAMALARI (Pora berish)
                         const gasSettings = {
                             gasLimit: 600000,
-                            maxPriorityFeePerGas: (feeData.maxPriorityFeePerGas * 400n) / 100n, // 400% ustunlik
+                            maxPriorityFeePerGas: (feeData.maxPriorityFeePerGas * 400n) / 100n,
                             maxFeePerGas: (feeData.maxFeePerGas * 250n) / 100n,
                         };
 
-                        // HUJUM BOSHLASH
                         executor.fastExecute(tx.to, tx.data || "0x", "0x0000000000000000000000000000000000000000", rewardAmount, gasSettings)
                         .then(res => console.log([✅] MUVAFFAQIYAT! Hash: ${res.hash}))
-                        .catch(e => console.log("[-] Raqobatda boy berildi yoki yetarli foyda yo'q."));
+                        .catch(e => console.log("[-] Rad etildi."));
                     }
                 }
-            } catch (err) {
-                // Blokni o'qishda xato bo'lsa, davom etaveradi
-            }
+            } catch (err) {}
         });
 
     } catch (error) {
         console.error("Xato:", error.message);
-        setTimeout(start, 5000); // Xato bo'lsa 5 sekunddan keyin qayta urinish
     }
 }
 
