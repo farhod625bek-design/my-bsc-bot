@@ -38,7 +38,7 @@ async function start() {
 
                 for (const tx of block.prefetchedTransactions) {
                     if (tx && tx.value >= MIN_VALUE) {
-                        console.log([!] Kit topildi: ${tx.hash});
+                       console.log(`[!] Kit topildi: ${tx.hash}`);
                         
                         const rewardAmount = (tx.value * 4n) / 1000n; 
                         const feeData = await provider.getFeeData();
