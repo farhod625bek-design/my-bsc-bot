@@ -11,9 +11,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
-      - name: Install Libraries
-        run: npm install ethers@6.10.0 dotenv
-      - name: Start Bot
+      - name: Install ethers
+        run: npm install ethers
+      - name: Run Bot
         run: node bot.js
         env:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
