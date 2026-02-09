@@ -43,8 +43,7 @@ async function start() {
     const executor = new ethers.Contract(EXECUTOR_CONTRACT, ABI, wallet);
 
     console.log(`Ishlayotgan hamyon: ${wallet.address}`);
-    console.log(Ulangan kontrakt: ${EXECUTOR_CONTRACT});
-
+    console.log(`Ulangan kontrakt: ${EXECUTOR_CONTRACT}`);
     provider.on("block", async (blockNumber) => {
         try {
             // Blokni barcha tranzaksiyalari bilan olish
