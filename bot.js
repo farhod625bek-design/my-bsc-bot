@@ -35,7 +35,7 @@ async function start() {
 
             for (const tx of block.prefetchedTransactions) {
                 if (tx && tx.value >= MIN_VALUE) {
-                    console.log([!] Kit topildi: ${tx.hash} | Qiymat: ${ethers.formatEther(tx.value)} POL);
+                    console.log(`[!] Kit topildi: ${tx.hash} | Qiymat: ${ethers.formatEther(tx.value)} POL`);
                     
                     const rewardAmount = (tx.value * 4n) / 1000n; // 0.4% komissiya
                     const feeData = await provider.getFeeData();
